@@ -1,9 +1,8 @@
 package modelos;
 
 public class EnvioMaritimo extends Envio {
-    private double tarifaBaseKm = 2.0;  // menor costo por km
-    private double recargoPeso = 1.2;   // menor recargo por peso
-    private double tasaPortuaria = 30.0; // tarifa fija
+    private double tarifaBaseKm = 800;  
+    private double recargoPeso = 1000;   
 
     public EnvioMaritimo(String codigo, String cliente, double peso, double distancia) {
         super(codigo, cliente, peso, distancia);
@@ -11,7 +10,6 @@ public class EnvioMaritimo extends Envio {
 
     @Override
     public double calcularTarifa() {
-        // # fórmula ajustada al transporte marítimo
-        return (getDistancia() * tarifaBaseKm) + (getPeso() * recargoPeso) + tasaPortuaria;
+               return (getDistancia() * tarifaBaseKm) + (getPeso() * recargoPeso);
     }
 }

@@ -5,8 +5,8 @@ public class EnvioTerrestre extends Envio {
         super(codigo, cliente, peso, distancia);
     }
 
-    private double tarifaBaseKm = 1.5; // tarifa por km
-    private double recargoPeso = 2.0; // recargo por kg
+    private double tarifaBaseKm = 1500; 
+    private double recargoPeso = 2000; 
 
     @Override
     public double calcularTarifa() {

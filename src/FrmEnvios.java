@@ -2,7 +2,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -17,6 +16,10 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+import modelos.Envio;
+import modelos.EnvioAereo;
+import modelos.EnvioMaritimo;
+import modelos.EnvioTerrestre;
 
 public class FrmEnvios extends JFrame {
 
@@ -30,7 +33,7 @@ public class FrmEnvios extends JFrame {
 
     public FrmEnvios() {
         setSize(600, 400);
-        setTitle("Operador Logísitico");
+        setTitle("Operador Logístico");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         JToolBar tbEnvios = new JToolBar();
@@ -39,7 +42,7 @@ public class FrmEnvios extends JFrame {
         btnAgregarEnvio.setIcon(new ImageIcon(getClass().getResource("/iconos/AgregarEnvio.png")));
         btnAgregarEnvio.setToolTipText("Agregar Envío");
         btnAgregarEnvio.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(ActionEvent e) {
                 agregarEnvio();
             }
         });
@@ -49,19 +52,17 @@ public class FrmEnvios extends JFrame {
         btnQuitarEnvio.setIcon(new ImageIcon(getClass().getResource("/iconos/QuitarEnvio.png")));
         btnQuitarEnvio.setToolTipText("Quitar Envío");
         btnQuitarEnvio.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(ActionEvent e) {
                 quitarEnvio();
             }
         });
         tbEnvios.add(btnQuitarEnvio);
 
-        // Contenedor principal de ENVIOS con BoxLayout (vertical)
-        JPanel pnlEnvios = new JPanel();
+                JPanel pnlEnvios = new JPanel();
         pnlEnvios.setLayout(new BoxLayout(pnlEnvios, BoxLayout.Y_AXIS));
-
-        // Panel 1 (oculto por defecto)
+ 
         pnlEditarEnvio = new JPanel();
-        pnlEditarEnvio.setPreferredSize(new Dimension(pnlEditarEnvio.getWidth(), 250)); // Altura fija de 100px
+        pnlEditarEnvio.setPreferredSize(new Dimension(pnlEditarEnvio.getWidth(), 250)); 
         pnlEditarEnvio.setLayout(null);
 
         JLabel lblNumero = new JLabel("Número");
@@ -110,7 +111,7 @@ public class FrmEnvios extends JFrame {
         JButton btnGuardarEnvio = new JButton("Guardar");
         btnGuardarEnvio.setBounds(220, 70, 100, 25);
         btnGuardarEnvio.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(ActionEvent e) {
                 guardarEnvio();
             }
         });
@@ -119,26 +120,23 @@ public class FrmEnvios extends JFrame {
         JButton btnCancelarEnvio = new JButton("Cancelar");
         btnCancelarEnvio.setBounds(320, 70, 100, 25);
         btnCancelarEnvio.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+            public void actionPerformed(ActionEvent e) {
                 cancelarEnvio();
             }
         });
         pnlEditarEnvio.add(btnCancelarEnvio);
 
-        pnlEditarEnvio.setVisible(false); // Se oculta al inicio
-
-        // Panel 2 (siempre visible)
+        pnlEditarEnvio.setVisible(false); 
+     
         tblEnvios = new JTable();
         JScrollPane spListaEnvios = new JScrollPane(tblEnvios);
 
         DefaultTableModel dtm = new DefaultTableModel(null, encabezados);
         tblEnvios.setModel(dtm);
 
-        // Agregar componentes
         pnlEnvios.add(pnlEditarEnvio);
         pnlEnvios.add(spListaEnvios);
 
-        // JScrollPane para permitir desplazamiento si es necesario
         JScrollPane spEnvios = new JScrollPane(pnlEnvios);
         spEnvios.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
@@ -148,14 +146,71 @@ public class FrmEnvios extends JFrame {
 
     public void agregarEnvio() {
         pnlEditarEnvio.setVisible(true);
-
     }
 
     public void quitarEnvio() {
-
+        int filaSeleccionada = tblEnvios.getSelectedRow();
+        if (filaSeleccionada != -1) {
+            DefaultTableModel modelo = (DefaultTableModel) tblEnvios.getModel();
+            modelo.removeRow(filaSeleccionada);
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "Debes seleccionar un envío para eliminar.", "Aviso",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public void guardarEnvio() {
+        DefaultTableModel modelo = (DefaultTableModel) tblEnvios.getModel();
+
+        String codigo = txtNumero.getText();
+        String cliente = txtCliente.getText();
+        String pesoStr = txtPeso.getText();
+        String distanciaStr = txtDistancia.getText();
+        String tipo = cmbTipoEnvio.getSelectedItem().toString();
+
+        if (codigo.isEmpty() || cliente.isEmpty() || pesoStr.isEmpty() || distanciaStr.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Debes completar todos los campos.", "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        double peso, distancia;
+        try {
+            peso = Double.parseDouble(pesoStr);
+            distancia = Double.parseDouble(distanciaStr);
+        } catch (NumberFormatException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Peso y distancia deben ser valores numéricos.", "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Crear el tipo correcto de envío
+        Envio envio;
+        switch (tipo) {
+            case "Aéreo":
+                envio = new EnvioAereo(codigo, cliente, peso, distancia);
+                break;
+            case "Marítimo":
+                envio = new EnvioMaritimo(codigo, cliente, peso, distancia);
+                break;
+            default:
+                envio = new EnvioTerrestre(codigo, cliente, peso, distancia);
+                break;
+        }
+
+        // Calcular costo
+        double costo = envio.calcularTarifa();
+
+        // Agregar fila a la tabla
+        modelo.addRow(new Object[] { codigo, cliente, peso, distancia, tipo, costo });
+
+        // Limpiar campos
+        txtNumero.setText("");
+        txtCliente.setText("");
+        txtPeso.setText("");
+        txtDistancia.setText("");
+        cmbTipoEnvio.setSelectedIndex(0);
+
         pnlEditarEnvio.setVisible(false);
     }
 
@@ -163,4 +218,8 @@ public class FrmEnvios extends JFrame {
         pnlEditarEnvio.setVisible(false);
     }
 
+    public static void main(String[] args) {
+        FrmEnvios frm = new FrmEnvios();
+        frm.setVisible(true);
+    }
 }
